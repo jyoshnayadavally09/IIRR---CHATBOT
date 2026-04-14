@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:6.0
+    container_name: agri-chatbot-mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: agri_chatbot
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - agri_network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Flask ML API
+  ml-api:
+    build:
+      context: ./ml-model
+      dockerfile: Dockerfile
+    container_name: agri-chatbot-ml
+    ports:
+      - "6000:6000"
+    environment:
+      FLASK_ENV: production
+      DATASET_PATH: /app/dataset/final_modified_dataset.xlsx
+    volumes:
+      - ./dataset:/app/dataset:ro
+      - ./ml-model/models:/app/models
+    networks:
+      - agri_network
+    depends_on:
+      - mongodb
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Node.js Express Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: agri-chatbot-backend
+    ports:
+      - "5001:5001"
+    environment:
+      NODE_ENV: production
+      PORT: 5001
+      MONGO_URI: mongodb://mongodb:27017/agri_chatbot
+      ML_API_URL: http://ml-api:6000
+    volumes:
+      - ./backend/node_modules:/app/node_modules
+    networks:
+      - agri_network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      ml-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # React Frontend (production build)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:5001
+    container_name: agri-chatbot-frontend
+    ports:
+      - "5173:5173"
+    networks:
+      - agri_network
+    depends_on:
+      - backend
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  agri_network:
+    driver: bridge

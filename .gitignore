@@ -1,0 +1,14 @@
+.env
+*.env
+*.env.local
+backend/.env
+ml-model/.env
+frontend/.env.local
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
