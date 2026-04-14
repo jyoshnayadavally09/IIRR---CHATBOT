@@ -19,7 +19,7 @@ encoders = None
 target_encoder = None
 
 # Load dataset for matching
-DATASET_PATH = BASE_DIR.parent / 'dataset' / 'final_modified_dataset.xlsx'
+DATASET_PATH = BASE_DIR / 'final_modified_dataset.xlsx'
 dataset_df = None
 
 def load_artifacts():

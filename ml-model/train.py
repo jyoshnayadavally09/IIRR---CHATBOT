@@ -5,9 +5,11 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score, classification_report
 import pickle
 import os
+from pathlib import Path
 
 # Load dataset
-dataset_path = "../dataset/final_modified_dataset.xlsx"
+BASE_DIR = Path(__file__).resolve().parent
+dataset_path = BASE_DIR / "final_modified_dataset.xlsx"
 
 if not os.path.exists(dataset_path):
     print(f"Dataset not found at {dataset_path}")
