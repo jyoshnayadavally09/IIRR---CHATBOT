@@ -691,9 +691,9 @@ button {
   min-width: 140px;
   padding: 10px 12px;
   border-radius: 14px;
-  border: 1px solid rgba(117, 170, 229, 0.22);
+  border: 1px solid rgba(146, 205, 133, 0.32);
   background: rgba(255, 255, 255, 0.96);
-  color: #21496f;
+  color: #264f25;
   font: inherit;
   outline: none;
 }
@@ -836,7 +836,7 @@ button {
 .message-bubble.message-user {
   background: linear-gradient(180deg, #5ea9ff, #2d71d6);
   color: #fff;
-  box-shadow: 0 18px 36px rgba(73, 124, 189, 0.24);
+  box-shadow: 0 18px 36px rgba(46, 87, 130, 0.24);
 }
 
 .chatbot-input-form {
@@ -907,7 +907,7 @@ button {
 
 .chatbot-send-button {
   padding: 16px 24px;
-  background: linear-gradient(135deg, #5fa9ff 0%, #2a6fd5 100%);
+  background: linear-gradient(135deg, #82cf80 0%, #3f8c44 100%);
   color: #ffffff;
   border: none;
   border-radius: 18px;
