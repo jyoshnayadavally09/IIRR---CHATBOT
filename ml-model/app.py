@@ -1,18 +1,26 @@
-from flask import Flask, request, jsonify
+import os
 import pickle
-import numpy as np
-import pandas as pd
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
+from flask import Flask, request, jsonify
+
 app = Flask(__name__)
+BASE_DIR = Path(__file__).resolve().parent
 
 # Load model and encoders
-model = pickle.load(open("model.pkl", "rb"))
-encoders = pickle.load(open("encoders.pkl", "rb"))
-target_encoder = pickle.load(open("target_encoder.pkl", "rb"))
+with open(BASE_DIR / "model.pkl", "rb") as model_file:
+    model = pickle.load(model_file)
+
+with open(BASE_DIR / "encoders.pkl", "rb") as encoders_file:
+    encoders = pickle.load(encoders_file)
+
+with open(BASE_DIR / "target_encoder.pkl", "rb") as target_encoder_file:
+    target_encoder = pickle.load(target_encoder_file)
 
 # Load dataset for matching
-DATASET_PATH = Path(__file__).parent.parent / 'dataset' / 'final_modified_dataset.xlsx'
+DATASET_PATH = BASE_DIR.parent / 'dataset' / 'final_modified_dataset.xlsx'
 dataset_df = None
 
 def load_dataset():
@@ -125,4 +133,4 @@ def health():
 
 if __name__ == "__main__":
     load_dataset()
-    app.run(port=6000, debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 6000)), debug=False)
