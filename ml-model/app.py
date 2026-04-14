@@ -1,5 +1,6 @@
 import os
 import pickle
+import subprocess
 from pathlib import Path
 
 import numpy as np
@@ -8,20 +9,44 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 BASE_DIR = Path(__file__).resolve().parent
+MODEL_PATH = BASE_DIR / "model.pkl"
+ENCODERS_PATH = BASE_DIR / "encoders.pkl"
+TARGET_ENCODER_PATH = BASE_DIR / "target_encoder.pkl"
+TRAIN_SCRIPT_PATH = BASE_DIR / "train.py"
 
-# Load model and encoders
-with open(BASE_DIR / "model.pkl", "rb") as model_file:
-    model = pickle.load(model_file)
-
-with open(BASE_DIR / "encoders.pkl", "rb") as encoders_file:
-    encoders = pickle.load(encoders_file)
-
-with open(BASE_DIR / "target_encoder.pkl", "rb") as target_encoder_file:
-    target_encoder = pickle.load(target_encoder_file)
+model = None
+encoders = None
+target_encoder = None
 
 # Load dataset for matching
 DATASET_PATH = BASE_DIR.parent / 'dataset' / 'final_modified_dataset.xlsx'
 dataset_df = None
+
+def load_artifacts():
+    global model, encoders, target_encoder
+
+    try:
+        with open(MODEL_PATH, "rb") as model_file:
+            model = pickle.load(model_file)
+
+        with open(ENCODERS_PATH, "rb") as encoders_file:
+            encoders = pickle.load(encoders_file)
+
+        with open(TARGET_ENCODER_PATH, "rb") as target_encoder_file:
+            target_encoder = pickle.load(target_encoder_file)
+    except Exception as error:
+        print(f"Warning: Could not load model artifacts: {error}")
+        print("Attempting to retrain model artifacts from dataset...")
+        subprocess.run(["python", str(TRAIN_SCRIPT_PATH)], check=True, cwd=BASE_DIR)
+
+        with open(MODEL_PATH, "rb") as model_file:
+            model = pickle.load(model_file)
+
+        with open(ENCODERS_PATH, "rb") as encoders_file:
+            encoders = pickle.load(encoders_file)
+
+        with open(TARGET_ENCODER_PATH, "rb") as target_encoder_file:
+            target_encoder = pickle.load(target_encoder_file)
 
 def load_dataset():
     global dataset_df
@@ -132,5 +157,6 @@ def health():
     })
 
 if __name__ == "__main__":
+    load_artifacts()
     load_dataset()
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 6000)), debug=False)
